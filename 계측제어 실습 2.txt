@@ -1,0 +1,250 @@
+실습 2-1
+float voltage, resistance, current;
+void setup() {
+  Serial.begin(9600);
+}
+void loop() {
+  int sensorValue = analogRead(A0);
+    voltage = map(sensorValue,0,1023,0,500);
+    voltage = voltage / 100;
+    resistance = map(sensorValue,0,1023,10000,0);
+    current = (voltage / resistance) * 1000 ; //mA이므로 1000을 곱해줌
+    Serial.print(voltage);
+    Serial.print("            ");
+    Serial.print(resistance);
+    Serial.print("             ");
+    Serial.println(current);
+}
+옴 측정할때 가변저항기의 데이터 핀과 +를 뽑아서 멀티미터로 확인
+
+2-2
+#include<Servo.h>
+Servo myservo;
+int potVal;
+int angle;
+int state=0;
+// int outputValue;
+
+ void setup(){
+  myservo.attach(9);
+  Serial.begin(9600);
+ }
+
+void loop(){
+  potVal=analogRead(A0) ;
+  // outputValue=map(potVal,0,1023,0,255);
+  // angle=map(potVal,0,1023,0,179);
+  // analogWrite(9,outputValue);
+  angle=map(potVal,0,1023,0,179); // 마이서보 함수는0~180을 쏘는 함수. 라이트에 입력을 하기 때문에 
+  myservo.write(angle);
+
+  delay(300);
+  if(state%3==2){
+    Serial.print("\tpotVal=");
+    Serial.print(potVal);
+    Serial.print("\tangle=");
+    Serial.print(angle);
+    Serial.print("\n");
+  }
+  else{
+    Serial.print("\tpotVal=");
+    Serial.print(potVal);
+    Serial.print("\tangle=");
+    Serial.print(angle);
+  }
+  state=state+1 ;
+}
+
+2-3
+#include <Servo.h>
+Servo myservo;
+int const photocell = A0;
+int photocellVal ;
+int angle;
+int sensorMax = 0 ;
+int sensorMin = 1023 ;
+
+void setup () {
+myservo.attach(9);
+Serial.begin(9600);
+while (millis() < 5000) {
+  int sensorValue = analogRead(photocell);
+if (sensorValue > sensorMax) {      //큰 값이 들어오면 바뀜
+    sensorMax = sensorValue;
+    }
+if (sensorValue < sensorMin) {  //작은 값이 들어오면 바뀜
+    sensorMin = sensorValue;
+    }
+  }
+}
+
+void loop() {
+  photocellVal = analogRead(photocell);   포트셀 일종의 저항, 저항을 연결하여 그 깍아먹은 저항의 비만큼 전류
+  Serial.print("photocellVal: ");
+  Serial.print(photocellVal);
+  angle = map(photocellVal, sensorMin, sensorMax, 0, 179);
+  Serial.print(", angle: ");
+  Serial.println(angle);
+  myservo.write(angle);
+  delay(15);
+}
+
+2-4
+#include <Servo.h>
+Servo myservo;
+int pos = 0;
+void setup () {
+myservo.attach(9);
+}
+void loop() {
+  for (pos = 0; pos <= 180; pos += 1) {
+  myservo.write(pos);
+  delay(15);
+  }
+  delay(500);
+  for (pos = 180; pos >= 0; pos -= 1) {
+  myservo.write(pos);
+  delay(15);
+  }
+delay(500);
+}
+
+융합문제 1
+
+int ledPin = 9;
+int fadeAmount ;
+int brightness = 0;
+void setup() {
+}
+void loop() {
+  int potVal = analogRead(A0);
+  fadeAmount = map(potVal, 0 , 1023, 0 , 10);
+if (fadeAmount==0){
+    fadeAmount = 1;
+  }
+  for (brightness = 0 ; brightness <= 255; brightness += fadeAmount) {
+analogWrite(ledPin, brightness);
+delay(50);
+  }
+  for (brightness = 255 ; brightness >= 0; brightness -= fadeAmount) {
+analogWrite(ledPin, brightness);
+delay(50);
+  }
+}
+
+
+융합문제 2
+
+int lastbuttonstate;
+int buttonPin = 2;
+int buttonpushcounter = 0;
+int triangularnumber = 0;
+  void setup() {
+    Serial.begin(9600);
+}
+  void loop() {
+    int buttonstate = digitalRead(buttonPin);
+    if (buttonstate != lastbuttonstate && buttonstate == HIGH){
+        buttonpushcounter++;
+        triangularnumber += buttonpushcounter ;
+}
+
+  lastbuttonstate = buttonstate;
+
+  if (buttonpushcounter >= 11){
+      buttonpushcounter = 1;
+      triangularnumber = 1;
+}
+  
+  Serial.print("button counter=");
+  Serial.print(buttonpushcounter);
+  Serial.print("\t triangular number=");
+  Serial.println(triangularnumber);
+
+}
+
+융합문제 3
+
+const int buttonPin = 2;
+const int ledPin = 13;
+int buttonPushCounter = 0;
+int buttonState = 0;
+int lastButtonState = 0;
+void setup() {
+    Serial.begin(9600);
+    pinMode(buttonPin, INPUT);
+    pinMode(ledPin, OUTPUT);
+}
+
+  void loop() {
+buttonState = digitalRead(buttonPin);
+
+if(buttonState!= lastButtonState) {  //  !=(같지않으면)
+  if (buttonState == HIGH) {
+      buttonPushCounter++;
+      Serial.println("on");
+      Serial.print("number of button pushes: ");
+      Serial.println(buttonPushCounter);
+      if(buttonPushCounter>=20){
+        buttonPushCounter = 0 ;
+    }
+ }
+  else {
+    Serial.println("off");
+}
+  delay(50);
+}
+
+lastButtonState = buttonState;
+
+  if (buttonPushCounter % 5 == 0) {
+      digitalWrite(ledPin, HIGH);
+  }
+  else {
+      digitalWrite(ledPin, LOW);
+    
+  }
+}
+
+융합문제 4
+
+#include <Servo.h>
+Servo myservo;
+int pos = 0;
+int delta = 0;
+float tmp; // temperature
+void setup () {
+myservo.attach(9);
+}
+
+  void loop() {
+    int tmpstate = analogRead(A0);
+    int slowstate = digitalRead(2);
+    int faststate = digitalRead(3);
+
+    float voltage = (tmpstate / 1024.0) * 5.0;
+    tmp = (voltage - 0.5) *100 ;
+
+    if (tmp >= 23 && slowstate == HIGH){ delta = 1;
+      for(pos = 0; pos <= 180; pos += delta){
+    myservo.write(pos);
+    delay(15);
+      }
+      for(pos = 180; pos>=0; pos-=delta){
+        myservo.write(pos);
+        delay(15);
+      }
+    }
+  
+  if (tmp >= 23 && faststate == HIGH){ delta = 10;
+    for(pos = 0; pos <= 180; pos += delta) {
+      myservo.write(pos);
+      delay(40);
+    }
+    for(pos =180; pos>=0; pos-=delta){
+       myservo.write(pos);
+       delay(40);  //여기서 딜레이를 너무 빠르게 하면 서보모터가 호환되지 않음. 딜레이를 좀 줘야 함.
+    } 
+  }
+}
+
